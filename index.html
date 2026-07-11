@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>The Desk</title>
+<style>
+  :root { --bg:#0d1117; --card:#161b22; --line:#21262d; --text:#e6edf3;
+          --dim:#8b949e; --green:#3fb950; --red:#f85149; --amber:#d29922;
+          --accent:#58a6ff; }
+  * { box-sizing:border-box; margin:0; }
+  body { background:var(--bg); color:var(--text);
+         font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+         padding:16px; max-width:960px; margin:0 auto; }
+  h1 { font-size:20px; letter-spacing:.5px; }
+  h2 { font-size:13px; text-transform:uppercase; letter-spacing:1px;
+       color:var(--dim); margin-bottom:10px; }
+  .card { background:var(--card); border:1px solid var(--line);
+          border-radius:10px; padding:16px; margin-top:16px; }
+  .row { display:flex; gap:16px; flex-wrap:wrap; align-items:baseline; }
+  .big { font-size:30px; font-weight:700; }
+  .dim { color:var(--dim); font-size:13px; }
+  .ok { color:var(--green); } .bad { color:var(--red); } .warn { color:var(--amber); }
+  .dot { display:inline-block; width:10px; height:10px; border-radius:50%;
+         margin-right:6px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th { text-align:left; color:var(--dim); font-weight:500; padding:4px 8px;
+       border-bottom:1px solid var(--line); }
+  td { padding:6px 8px; border-bottom:1px solid var(--line); }
+  .feed div { padding:6px 0; border-bottom:1px solid var(--line);
+              font-size:13px; }
+  .feed .t { color:var(--dim); font-size:11px; }
+  pre { white-space:pre-wrap; font:13px/1.6 ui-monospace,Menlo,monospace;
+        color:var(--text); }
+  #gate { position:fixed; inset:0; background:var(--bg); display:flex;
+          align-items:center; justify-content:center; flex-direction:column;
+          gap:12px; z-index:10; }
+  input { background:var(--card); color:var(--text); border:1px solid var(--line);
+          border-radius:8px; padding:10px 14px; font-size:16px; }
+  svg text { fill:var(--dim); font-size:10px; }
+</style>
+</head>
+<body>
+<div id="gate">
+  <h1>The Desk</h1>
+  <input id="pass" type="password" placeholder="passcode" autofocus
+         onkeydown="if(event.key==='Enter')unlock()">
+  <span class="dim">private dashboard</span>
+</div>
+
+<div id="app" style="display:none">
+  <div class="row" style="justify-content:space-between">
+    <h1>The Desk <span class="dim">· OANDA practice</span></h1>
+    <span id="status"></span>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div><div class="dim">NAV</div><div class="big" id="nav">—</div></div>
+      <div><div class="dim">Open campaigns</div><div class="big" id="open">—</div></div>
+      <div><div class="dim">Last cycle</div><div id="last" style="font-size:16px">—</div></div>
+    </div>
+  </div>
+
+  <div class="card"><h2>Equity</h2><div id="chart"></div></div>
+  <div class="card"><h2>Daily rundown</h2><pre id="rundown">—</pre></div>
+  <div class="card"><h2>Campaigns</h2>
+    <table><thead><tr><th>Opened</th><th>State</th><th>R</th><th>Closed</th>
+    <th>Reason</th></tr></thead><tbody id="camps"></tbody></table></div>
+  <div class="card"><h2>Decision log <span class="dim">(why, not just what)</span></h2>
+    <div class="feed" id="feed"></div></div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://fzhhbhesjdotsfghumqz.supabase.co";
+const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6aGhiaGVzamRvdHNmZ2h1bXF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NTM3ODIsImV4cCI6MjA5NjIyOTc4Mn0.ZMI6qkLuINZ7wCVdk9wXNwo-qDMWjUan2GRmc0cgZWM";
+const PASS_HASH = "831098ef06769201a2a071738d2aae78167efa5176469b1465f2bf87ff2b354e";
+
+async function sha256(s){const b=await crypto.subtle.digest("SHA-256",
+  new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>
+  x.toString(16).padStart(2,"0")).join("");}
+
+async function unlock(){
+  const h=await sha256(document.getElementById("pass").value);
+  if(h===PASS_HASH){localStorage.setItem("desk_auth",h);enter();}
+  else document.getElementById("pass").style.borderColor="var(--red)";
+}
+function enter(){document.getElementById("gate").style.display="none";
+  document.getElementById("app").style.display="block";load();
+  setInterval(load, 120000);}
+
+async function q(table, params){
+  const r=await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`,
+    {headers:{apikey:ANON_KEY, Authorization:`Bearer ${ANON_KEY}`}});
+  return r.ok ? r.json() : [];
+}
+const fmt=(n)=>Number(n).toLocaleString(undefined,{maximumFractionDigits:2});
+const ago=(ts)=>{const m=(Date.now()-new Date(ts))/60000;
+  return m<90?`${m|0}m ago`:m<2880?`${(m/60)|0}h ago`:`${(m/1440)|0}d ago`;};
+
+async function load(){
+  const [hb]=await q("desk_heartbeat","id=eq.1");
+  if(hb){
+    document.getElementById("nav").textContent=fmt(hb.nav);
+    document.getElementById("open").textContent=hb.open_campaigns;
+    document.getElementById("last").textContent=ago(hb.ts);
+    const stale=(Date.now()-new Date(hb.ts))/3600000>6;
+    document.getElementById("status").innerHTML=stale
+      ?'<span class="dot" style="background:var(--amber)"></span><span class="warn">stale</span>'
+      :'<span class="dot" style="background:var(--green)"></span><span class="ok">running</span>';
+  }
+  const eq=await q("desk_equity","order=ts.asc&limit=1000");
+  drawChart(eq);
+  const rd=await q("desk_rundown","order=day.desc&limit=1");
+  if(rd[0]) document.getElementById("rundown").textContent=
+    rd[0].day+"\n"+rd[0].text;
+  const camps=await q("desk_campaigns","order=opened_ts.desc&limit=25");
+  document.getElementById("camps").innerHTML=camps.map(c=>{
+    const r=c.campaign_r, cls=r>0?"ok":r<0?"bad":"";
+    return `<tr><td>${(c.opened_ts||"").slice(0,10)}</td><td>${c.state}</td>
+      <td class="${cls}">${r==null?"—":(r>=0?"+":"")+fmt(r)+"R"}</td>
+      <td>${(c.closed_ts||"").slice(0,10)||"open"}</td>
+      <td class="dim">${c.close_reason||""}</td></tr>`;}).join("");
+  const dec=await q("desk_decisions","order=id.desc&limit=30");
+  document.getElementById("feed").innerHTML=dec.map(d=>
+    `<div><span class="t">${(d.ts||"").slice(0,16).replace("T"," ")} · ${d.category}</span><br>${d.detail}</div>`).join("");
+}
+
+function drawChart(eq){
+  const el=document.getElementById("chart");
+  if(eq.length<2){el.innerHTML='<span class="dim">collecting data…</span>';return;}
+  const W=900,H=220,P=36;
+  const vals=eq.map(e=>e.nav), lo=Math.min(...vals), hi=Math.max(...vals);
+  const pad=(hi-lo)*0.1||1;
+  const x=i=>P+(W-2*P)*i/(eq.length-1);
+  const y=v=>H-P-(H-2*P)*(v-lo+pad)/(hi-lo+2*pad);
+  const pts=vals.map((v,i)=>`${x(i)},${y(v)}`).join(" ");
+  const up=vals[vals.length-1]>=vals[0];
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%">
+    <text x="${P}" y="${y(hi)-6}">${fmt(hi)}</text>
+    <text x="${P}" y="${y(lo)+14}">${fmt(lo)}</text>
+    <polyline points="${pts}" fill="none"
+      stroke="${up?'var(--green)':'var(--red)'}" stroke-width="2"/></svg>`;
+}
+
+if(localStorage.getItem("desk_auth")===PASS_HASH) enter();
+</script>
+</body>
+</html>
