@@ -94,6 +94,22 @@
   .btn:active { background:var(--charcoal); }
   footer { color:var(--muted); font-size:12px; padding-top:24px;
            border-top:1px solid var(--hairline-soft); }
+  .trace .step { margin-bottom:16px; }
+  .trace .step-title { font-size:13px; font-weight:600; color:var(--ink);
+                       margin-bottom:6px; }
+  .trace .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip { font-size:12px; font-weight:500; border-radius:9999px;
+          padding:3px 10px; background:var(--surface); color:var(--steel);
+          border:1px solid var(--hairline); }
+  .chip.trend { background:#eef4ff; color:var(--brand-blue-deep);
+                border-color:#dbe7ff; }
+  .chip.hot { background:#fff1ec; color:#c2410c; border-color:#ffe0d5; }
+  .chip.exec { background:var(--primary); color:var(--on-primary);
+               border:none; }
+  .trace .line { font-size:14px; color:var(--charcoal); padding:4px 0; }
+  .trace .verdict { font-size:14px; font-weight:600; color:var(--ink);
+                    padding-top:8px; border-top:1px solid var(--hairline-soft);
+                    margin-top:8px; }
   svg text { fill:var(--stone); font-size:11px;
              font-family:"DM Sans",sans-serif; }
 </style>
@@ -122,6 +138,10 @@
   </div>
 
   <div class="card"><h2>Equity</h2><div id="chart"></div></div>
+
+  <div class="card"><h2>Latest cycle — under the hood</h2>
+    <div id="trace" class="trace"><span class="quiet">Waiting for the next cycle…</span></div>
+  </div>
 
   <div class="grid">
     <div>
@@ -191,10 +211,51 @@ async function load(){
       <td>${(c.closed_ts||"").slice(0,10)||"open"}</td>
       <td class="quiet">${c.close_reason||""}</td></tr>`;}).join("")
     || '<tr><td colspan="5" class="quiet">No campaigns yet — the desk is patient by design.</td></tr>';
+  const tr=await q("desk_trace","order=ts.desc&limit=1");
+  if(tr[0]) renderTrace(tr[0].payload);
   const dec=await q("desk_decisions","order=id.desc&limit=30");
   document.getElementById("feed").innerHTML=dec.map(d=>
     `<div><span class="t">${(d.ts||"").slice(0,16).replace("T"," ")} · ${d.category}</span>${d.detail}</div>`).join("")
     || '<div class="quiet">No decisions logged yet.</div>';
+}
+
+function renderTrace(t){
+  if(!t||!t.regime) return;
+  const el=document.getElementById("trace");
+  const when=(t.ts||"").slice(0,16).replace("T"," ")+" UTC";
+  const regime=t.regime.map(r=>{
+    const cls=r.regime==="TRENDING"?"trend":(r.atr_pctile>=80?"hot":"");
+    const d=r.disloc>=2?" ⚡":"";
+    return `<span class="chip ${cls}">${r.pair.replace("_","/")} ${r.regime.slice(0,5)} ${Math.round(r.prob*100)}%${d}</span>`;
+  }).join("");
+  const crowded=(t.macro||[]).filter(m=>Math.abs(m.crowd)>=40)
+    .map(m=>`<span class="chip">${m.pair.replace("_","/")} crowd ${m.crowd>0?"long":"short"} base</span>`).join("")
+    || '<span class="quiet" style="font-size:13px">no positioning extremes</span>';
+  const scouts=Object.entries(t.scouts||{}).map(([name,s])=>{
+    const tag=s.shadow?" (benched — learning only)":"";
+    const p=s.pitches.length
+      ? s.pitches.map(x=>`${x.pair.replace("_","/")} ${x.dir} RR ${x.rr}`).join(", ")
+      : "no qualifying setups";
+    return `<div class="line"><b>${name}</b>${tag}: scanned ${s.scanned} pairs — ${p}</div>`;
+  }).join("");
+  const risk=(t.risk||[]).map(r=>
+    `<div class="line">${r.pair.replace("_","/")} (${r.scout}) — ${r.approved?"approved":"rejected: "+r.reason}</div>`).join("")
+    || '<div class="line quiet">no pitches reached risk review</div>';
+  const ex=(t.selection&&t.selection.executed)||[];
+  const verdict= ex.length
+    ? ex.map(e=>`<span class="chip exec">EXECUTED ${e.pair.replace("_","/")} ${e.dir} @ ${e.price} (${e.risk_pct}% risk)</span>`).join(" ")
+    : "Passed — nothing cleared the bar. “No trade” is a position.";
+  const blk=(t.blackouts||[]).length
+    ? t.blackouts.map(p=>p.replace("_","/")).join(", ") : "none";
+  el.innerHTML=`
+    <div class="step"><div class="step-title">1 · Regime read — ${when}</div>
+      <div class="chips">${regime}</div></div>
+    <div class="step"><div class="step-title">2 · Positioning extremes (crowd veto watches these)</div>
+      <div class="chips">${crowded}</div></div>
+    <div class="step"><div class="step-title">3 · News blackouts: ${blk}</div></div>
+    <div class="step"><div class="step-title">4 · Scouts</div>${scouts}</div>
+    <div class="step"><div class="step-title">5 · Risk review</div>${risk}</div>
+    <div class="verdict">6 · Head trader: ${verdict}</div>`;
 }
 
 function drawChart(eq){
