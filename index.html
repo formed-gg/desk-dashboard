@@ -5,71 +5,138 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>The Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#0d1117; --card:#161b22; --line:#21262d; --text:#e6edf3;
-          --dim:#8b949e; --green:#3fb950; --red:#f85149; --amber:#d29922;
-          --accent:#58a6ff; }
+  :root {
+    --primary:#0a0a0a; --on-primary:#ffffff; --brand-blue:#1456f0;
+    --brand-blue-deep:#1d4ed8; --canvas:#ffffff; --surface:#f7f8fa;
+    --hairline:#e5e7eb; --hairline-soft:#eaecf0; --ink:#0a0a0a;
+    --charcoal:#222222; --slate:#45515e; --steel:#5f5f5f; --stone:#8e8e93;
+    --muted:#a8aab2; --success-bg:#e8ffea; --success-text:#1ba673;
+    --coral:#ff5530; --error:#d45656;
+  }
   * { box-sizing:border-box; margin:0; }
-  body { background:var(--bg); color:var(--text);
-         font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-         padding:16px; max-width:960px; margin:0 auto; }
-  h1 { font-size:20px; letter-spacing:.5px; }
-  h2 { font-size:13px; text-transform:uppercase; letter-spacing:1px;
-       color:var(--dim); margin-bottom:10px; }
-  .card { background:var(--card); border:1px solid var(--line);
-          border-radius:10px; padding:16px; margin-top:16px; }
-  .row { display:flex; gap:16px; flex-wrap:wrap; align-items:baseline; }
-  .big { font-size:30px; font-weight:700; }
-  .dim { color:var(--dim); font-size:13px; }
-  .ok { color:var(--green); } .bad { color:var(--red); } .warn { color:var(--amber); }
-  .dot { display:inline-block; width:10px; height:10px; border-radius:50%;
-         margin-right:6px; }
-  table { width:100%; border-collapse:collapse; font-size:13px; }
-  th { text-align:left; color:var(--dim); font-weight:500; padding:4px 8px;
-       border-bottom:1px solid var(--line); }
-  td { padding:6px 8px; border-bottom:1px solid var(--line); }
-  .feed div { padding:6px 0; border-bottom:1px solid var(--line);
-              font-size:13px; }
-  .feed .t { color:var(--dim); font-size:11px; }
-  pre { white-space:pre-wrap; font:13px/1.6 ui-monospace,Menlo,monospace;
-        color:var(--text); }
-  #gate { position:fixed; inset:0; background:var(--bg); display:flex;
-          align-items:center; justify-content:center; flex-direction:column;
-          gap:12px; z-index:10; }
-  input { background:var(--card); color:var(--text); border:1px solid var(--line);
-          border-radius:8px; padding:10px 14px; font-size:16px; }
-  svg text { fill:var(--dim); font-size:10px; }
+  body { background:var(--canvas); color:var(--charcoal);
+         font-family:"DM Sans",Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;
+         font-size:16px; line-height:1.5; padding:0 32px 64px;
+         max-width:1280px; margin:0 auto; }
+  header { display:flex; justify-content:space-between; align-items:center;
+           height:64px; border-bottom:1px solid var(--hairline-soft);
+           margin-bottom:32px; }
+  .wordmark { font-size:20px; font-weight:700; letter-spacing:-0.5px;
+              color:var(--ink); }
+  .wordmark span { color:var(--stone); font-weight:500; font-size:14px;
+                   margin-left:8px; letter-spacing:0; }
+  h2 { font-size:13px; font-weight:600; line-height:1.5; color:var(--steel);
+       text-transform:uppercase; letter-spacing:.4px; margin-bottom:16px; }
+  .badge { display:inline-flex; align-items:center; gap:6px;
+           font-size:13px; font-weight:600; border-radius:9999px;
+           padding:4px 12px; }
+  .badge-success { background:var(--success-bg); color:var(--success-text); }
+  .badge-stale { background:var(--coral); color:var(--on-primary); }
+  .dot { width:8px; height:8px; border-radius:9999px; background:currentColor; }
+
+  /* signature product-identity card (blue) */
+  .hero-card { background:var(--brand-blue); color:var(--on-primary);
+               border-radius:32px; padding:32px; margin-bottom:24px;
+               display:flex; gap:48px; flex-wrap:wrap; align-items:flex-end; }
+  .hero-card .label { font-size:14px; font-weight:500; opacity:.8; }
+  .hero-card .nav { font-size:56px; font-weight:600; line-height:1.1;
+                    letter-spacing:-1.5px; }
+  .hero-card .stat { font-size:32px; font-weight:600; line-height:1.25;
+                     letter-spacing:-0.5px; }
+
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  @media (max-width:1023px){ .grid { grid-template-columns:1fr; }
+    .hero-card .nav { font-size:40px; } body { padding:0 16px 48px; } }
+
+  .card { background:var(--canvas); border:1px solid var(--hairline);
+          border-radius:16px; padding:24px; margin-bottom:24px; }
+  .card-feature { background:var(--surface); border:none; }
+
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  thead th { background:var(--surface); color:var(--steel); font-size:13px;
+             font-weight:600; text-align:left; padding:12px 16px; }
+  thead th:first-child { border-radius:8px 0 0 8px; }
+  thead th:last-child { border-radius:0 8px 8px 0; }
+  td { padding:16px; border-bottom:1px solid var(--hairline-soft);
+       color:var(--ink); }
+  .pos { color:var(--success-text); font-weight:600; }
+  .neg { color:var(--error); font-weight:600; }
+  .quiet { color:var(--stone); }
+
+  .feed div { padding:12px 0; border-bottom:1px solid var(--hairline-soft);
+              font-size:14px; color:var(--charcoal); }
+  .feed .t { color:var(--stone); font-size:12px; display:block;
+             margin-bottom:2px; }
+  pre { white-space:pre-wrap; font-family:"DM Sans",sans-serif; font-size:16px;
+        line-height:1.6; color:var(--charcoal); }
+
+  /* passcode gate */
+  #gate { position:fixed; inset:0; background:var(--canvas); z-index:10;
+          display:flex; align-items:center; justify-content:center;
+          flex-direction:column; gap:24px; padding:24px; }
+  #gate h1 { font-size:56px; font-weight:600; letter-spacing:-1.5px;
+             line-height:1.1; color:var(--ink); }
+  #gate p { font-size:18px; font-weight:500; color:var(--steel); }
+  .gate-row { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+  input { background:var(--canvas); color:var(--ink); font-family:inherit;
+          font-size:16px; border:1px solid var(--hairline); border-radius:8px;
+          padding:12px 16px; height:44px; width:240px; outline:none; }
+  input:focus { border:2px solid var(--brand-blue-deep); padding:11px 15px; }
+  input.err { border:1px solid var(--error); }
+  .btn { background:var(--primary); color:var(--on-primary); border:none;
+         font-family:inherit; font-size:14px; font-weight:600;
+         border-radius:9999px; padding:11px 24px; height:44px;
+         cursor:pointer; }
+  .btn:active { background:var(--charcoal); }
+  footer { color:var(--muted); font-size:12px; padding-top:24px;
+           border-top:1px solid var(--hairline-soft); }
+  svg text { fill:var(--stone); font-size:11px;
+             font-family:"DM Sans",sans-serif; }
 </style>
 </head>
 <body>
 <div id="gate">
   <h1>The Desk</h1>
-  <input id="pass" type="password" placeholder="passcode" autofocus
-         onkeydown="if(event.key==='Enter')unlock()">
-  <span class="dim">private dashboard</span>
+  <p>Private trading dashboard</p>
+  <div class="gate-row">
+    <input id="pass" type="password" placeholder="Passcode" autofocus
+           onkeydown="if(event.key==='Enter')unlock()">
+    <button class="btn" onclick="unlock()">Enter</button>
+  </div>
 </div>
 
 <div id="app" style="display:none">
-  <div class="row" style="justify-content:space-between">
-    <h1>The Desk <span class="dim">· OANDA practice</span></h1>
+  <header>
+    <div class="wordmark">The Desk<span>OANDA practice</span></div>
     <span id="status"></span>
-  </div>
+  </header>
 
-  <div class="card">
-    <div class="row">
-      <div><div class="dim">NAV</div><div class="big" id="nav">—</div></div>
-      <div><div class="dim">Open campaigns</div><div class="big" id="open">—</div></div>
-      <div><div class="dim">Last cycle</div><div id="last" style="font-size:16px">—</div></div>
-    </div>
+  <div class="hero-card">
+    <div><div class="label">Net asset value</div><div class="nav" id="nav">—</div></div>
+    <div><div class="label">Open campaigns</div><div class="stat" id="open">—</div></div>
+    <div><div class="label">Last cycle</div><div class="stat" id="last">—</div></div>
   </div>
 
   <div class="card"><h2>Equity</h2><div id="chart"></div></div>
-  <div class="card"><h2>Daily rundown</h2><pre id="rundown">—</pre></div>
-  <div class="card"><h2>Campaigns</h2>
-    <table><thead><tr><th>Opened</th><th>State</th><th>R</th><th>Closed</th>
-    <th>Reason</th></tr></thead><tbody id="camps"></tbody></table></div>
-  <div class="card"><h2>Decision log <span class="dim">(why, not just what)</span></h2>
-    <div class="feed" id="feed"></div></div>
+
+  <div class="grid">
+    <div>
+      <div class="card card-feature"><h2>Daily rundown</h2><pre id="rundown">—</pre></div>
+      <div class="card"><h2>Decision log</h2><div class="feed" id="feed"></div></div>
+    </div>
+    <div>
+      <div class="card"><h2>Campaigns</h2>
+        <table><thead><tr><th>Opened</th><th>State</th><th>R</th><th>Closed</th>
+        <th>Reason</th></tr></thead><tbody id="camps"></tbody></table></div>
+    </div>
+  </div>
+
+  <footer>The Desk · automated FX research platform · practice account ·
+    updates every 4 hours on trading days</footer>
 </div>
 
 <script>
@@ -82,9 +149,10 @@ async function sha256(s){const b=await crypto.subtle.digest("SHA-256",
   x.toString(16).padStart(2,"0")).join("");}
 
 async function unlock(){
-  const h=await sha256(document.getElementById("pass").value);
+  const el=document.getElementById("pass");
+  const h=await sha256(el.value);
   if(h===PASS_HASH){localStorage.setItem("desk_auth",h);enter();}
-  else document.getElementById("pass").style.borderColor="var(--red)";
+  else el.classList.add("err");
 }
 function enter(){document.getElementById("gate").style.display="none";
   document.getElementById("app").style.display="block";load();
@@ -107,8 +175,8 @@ async function load(){
     document.getElementById("last").textContent=ago(hb.ts);
     const stale=(Date.now()-new Date(hb.ts))/3600000>6;
     document.getElementById("status").innerHTML=stale
-      ?'<span class="dot" style="background:var(--amber)"></span><span class="warn">stale</span>'
-      :'<span class="dot" style="background:var(--green)"></span><span class="ok">running</span>';
+      ?'<span class="badge badge-stale"><span class="dot"></span>Stale</span>'
+      :'<span class="badge badge-success"><span class="dot"></span>Running</span>';
   }
   const eq=await q("desk_equity","order=ts.asc&limit=1000");
   drawChart(eq);
@@ -117,31 +185,34 @@ async function load(){
     rd[0].day+"\n"+rd[0].text;
   const camps=await q("desk_campaigns","order=opened_ts.desc&limit=25");
   document.getElementById("camps").innerHTML=camps.map(c=>{
-    const r=c.campaign_r, cls=r>0?"ok":r<0?"bad":"";
+    const r=c.campaign_r, cls=r>0?"pos":r<0?"neg":"";
     return `<tr><td>${(c.opened_ts||"").slice(0,10)}</td><td>${c.state}</td>
       <td class="${cls}">${r==null?"—":(r>=0?"+":"")+fmt(r)+"R"}</td>
       <td>${(c.closed_ts||"").slice(0,10)||"open"}</td>
-      <td class="dim">${c.close_reason||""}</td></tr>`;}).join("");
+      <td class="quiet">${c.close_reason||""}</td></tr>`;}).join("")
+    || '<tr><td colspan="5" class="quiet">No campaigns yet — the desk is patient by design.</td></tr>';
   const dec=await q("desk_decisions","order=id.desc&limit=30");
   document.getElementById("feed").innerHTML=dec.map(d=>
-    `<div><span class="t">${(d.ts||"").slice(0,16).replace("T"," ")} · ${d.category}</span><br>${d.detail}</div>`).join("");
+    `<div><span class="t">${(d.ts||"").slice(0,16).replace("T"," ")} · ${d.category}</span>${d.detail}</div>`).join("")
+    || '<div class="quiet">No decisions logged yet.</div>';
 }
 
 function drawChart(eq){
   const el=document.getElementById("chart");
-  if(eq.length<2){el.innerHTML='<span class="dim">collecting data…</span>';return;}
-  const W=900,H=220,P=36;
+  if(eq.length<2){el.innerHTML='<span class="quiet" style="font-size:14px">Collecting data — the chart appears after a few cycles.</span>';return;}
+  const W=1100,H=240,P=44;
   const vals=eq.map(e=>e.nav), lo=Math.min(...vals), hi=Math.max(...vals);
   const pad=(hi-lo)*0.1||1;
   const x=i=>P+(W-2*P)*i/(eq.length-1);
   const y=v=>H-P-(H-2*P)*(v-lo+pad)/(hi-lo+2*pad);
   const pts=vals.map((v,i)=>`${x(i)},${y(v)}`).join(" ");
   const up=vals[vals.length-1]>=vals[0];
+  const col=up?"#1ba673":"#d45656";
   el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%">
-    <text x="${P}" y="${y(hi)-6}">${fmt(hi)}</text>
-    <text x="${P}" y="${y(lo)+14}">${fmt(lo)}</text>
-    <polyline points="${pts}" fill="none"
-      stroke="${up?'var(--green)':'var(--red)'}" stroke-width="2"/></svg>`;
+    <text x="${P}" y="${y(hi)-8}">${fmt(hi)}</text>
+    <text x="${P}" y="${y(lo)+16}">${fmt(lo)}</text>
+    <polyline points="${pts}" fill="none" stroke="${col}"
+      stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
 }
 
 if(localStorage.getItem("desk_auth")===PASS_HASH) enter();
