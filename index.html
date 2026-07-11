@@ -295,6 +295,22 @@
         <div class="why">Designed to make losers small and constant, winners
         occasionally huge.</div>
       </div>
+      <div class="agent">
+        <h3>Fix Fader <span class="badge badge-live">Verified edge · paper</span></h3>
+        <div class="role">Trades one hour a month-end: fades the London 4pm
+        fix when rebalancing flow overshoots.</div>
+        <ul>
+          <li>Last business day only; triggers when the fix-hour move is in
+              its top 10% (rolling 250 days, per pair)</li>
+          <li>Enters against the move at the fix close, exits 60 minutes
+              later — 12 pairs, tiny fixed size, catastrophe stop</li>
+          <li>Verified on 5 independent samples 2010–2026 (+0.18 to +0.35
+              pseudo-R); riding the same move loses in all 5</li>
+        </ul>
+        <div class="why">Month-end pension/index rebalancing is forced
+        through one benchmark window — the push partially snaps back. The
+        first edge to survive every control; earning live capital on paper.</div>
+      </div>
     </div>
   </div>
 
@@ -317,12 +333,22 @@
         <tr><td>Our methods can fool us</td>
           <td>Null-control produced a convincing fake pattern, then failed to replicate</td>
           <td>Nothing ships without surviving unseen data</td></tr>
+        <tr><td>News is priced before you can click</td>
+          <td>526 surprise events: placebo "moves" matched real ones at 2h+</td>
+          <td>No news-chasing; blackout logic stays</td></tr>
+        <tr><td>Era-local patterns are real but die</td>
+          <td>7 statistically-solid fit-era patterns, 0 survived new eras</td>
+          <td>Triple-era gauntlet is mandatory forever</td></tr>
+        <tr><td class="pos">Month-end fix fade WORKS</td>
+          <td>Positive in 5 independent samples 2010–2026; momentum null negative in all 5</td>
+          <td><b>Fix Fader shipped to paper</b> — first verified sword</td></tr>
       </tbody>
     </table>
-    <p class="prose" style="margin-top:16px">Bottom line: <b>no free public
-    signal beats trading costs.</b> The desk therefore trades practice while
-    the edge hunt continues — next experiment: OANDA's own retail order-book
-    and position-book data (untested, free, finer-grained than anything above).</p>
+    <p class="prose" style="margin-top:16px">Bottom line: after nine
+    pre-registered trials across eight signal families, <b>one structural
+    edge survived every control</b> — the month-end London fix fade — plus
+    one verified law (the crowd veto). Both trade on paper only until
+    sustained results earn live capital.</p>
   </div>
 </div>
 
