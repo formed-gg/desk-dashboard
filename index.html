@@ -110,6 +110,30 @@
   .trace .verdict { font-size:14px; font-weight:600; color:var(--ink);
                     padding-top:8px; border-top:1px solid var(--hairline-soft);
                     margin-top:8px; }
+  .tab { background:var(--canvas); color:var(--steel); font-family:inherit;
+         font-size:14px; font-weight:500; border:1px solid var(--hairline);
+         border-radius:9999px; padding:8px 16px; cursor:pointer; }
+  .tab.active { background:var(--primary); color:var(--on-primary);
+                border-color:var(--primary); font-weight:600; }
+  .agent-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  @media (max-width:1023px){ .agent-grid { grid-template-columns:1fr; } }
+  .agent { background:var(--canvas); border:1px solid var(--hairline);
+           border-radius:24px; padding:24px; }
+  .agent h3 { font-size:20px; font-weight:600; color:var(--ink);
+              display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+  .agent .role { font-size:14px; color:var(--steel); margin-bottom:12px; }
+  .agent ul { margin:0 0 12px 18px; padding:0; font-size:14px;
+              color:var(--charcoal); }
+  .agent ul li { margin-bottom:4px; }
+  .agent .why { font-size:13px; line-height:1.7; color:var(--stone); }
+  .badge-live { background:var(--success-bg); color:var(--success-text); }
+  .badge-bench { background:var(--surface); color:var(--steel);
+                 border:1px solid var(--hairline); }
+  .badge-rule { background:#eef4ff; color:var(--brand-blue-deep); }
+  .findings td:first-child { font-weight:600; white-space:nowrap; }
+  .prose { font-size:16px; line-height:1.6; color:var(--charcoal);
+           max-width:760px; }
+  .prose b { color:var(--ink); }
   svg text { fill:var(--stone); font-size:11px;
              font-family:"DM Sans",sans-serif; }
 </style>
@@ -128,7 +152,11 @@
 <div id="app" style="display:none">
   <header>
     <div class="wordmark">The Desk<span>OANDA practice</span></div>
-    <span id="status"></span>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="tab active" id="tab-live" onclick="showView('live')">Live</button>
+      <button class="tab" id="tab-how" onclick="showView('how')">How it works</button>
+      <span id="status"></span>
+    </div>
   </header>
 
   <div class="hero-card">
@@ -159,6 +187,145 @@
     updates every 4 hours on trading days</footer>
 </div>
 
+<div id="view-how" style="display:none">
+  <div class="card card-feature">
+    <h2>The desk in one paragraph</h2>
+    <p class="prose">Six times a day, a team of software agents reads the
+    market, pitches trade ideas to each other, argues about risk, and usually
+    decides to do nothing. Every scan, pitch, rejection and trade is logged
+    and scored. The desk trades a <b>practice account</b> because our own
+    research (below) proved it hasn't yet earned real money — the honesty is
+    the feature.</p>
+  </div>
+
+  <div class="card"><h2>The agents & what each one hunts</h2>
+    <div class="agent-grid">
+      <div class="agent">
+        <h3>Divergence Sniper <span class="badge badge-live">Live</span></h3>
+        <div class="role">Hunts exhausted moves about to snap back.</div>
+        <ul>
+          <li>Price makes a new extreme but momentum refuses to confirm it</li>
+          <li>Stretched 3+ ATR beyond its 50-period average</li>
+          <li>Sitting at a significant higher-timeframe level</li>
+          <li>Waits for a strong reversal candle before pitching</li>
+        </ul>
+        <div class="why">Best evidence of any scout: 52% of its winners ran
+        past 2R in testing. Thresholds tightened to its proven slices.</div>
+      </div>
+      <div class="agent">
+        <h3>Mean Reverter <span class="badge badge-live">Live</span></h3>
+        <div class="role">Fades stretched rubber bands inside established ranges.</div>
+        <ul>
+          <li>Range with 3+ touches of the same boundary</li>
+          <li>Price within 0.3 ATR of the edge, RSI at a deep extreme</li>
+          <li>Asia session only — ranges hold in Asia, break in London/NY</li>
+          <li>High-volatility ranges only; banks 60% profit fast at +1.2R</li>
+        </ul>
+        <div class="why">Every filter above was mined from its own trade
+        history — the profitable slices survived, the rest were cut.</div>
+      </div>
+      <div class="agent">
+        <h3>Trend Rider <span class="badge badge-bench">Benched</span></h3>
+        <div class="role">Hunted pullbacks in established trends.</div>
+        <ul>
+          <li>Confirmed trend, pullback into the 20-period average</li>
+          <li>Rejection candle as the trigger</li>
+        </ul>
+        <div class="why">Fired on evidence: ~2,200 measured outcomes across 9
+        years, negative in every era and every condition. The pattern is too
+        famous — the market taxes it. Still scans and learns; executes nothing.</div>
+      </div>
+      <div class="agent">
+        <h3>Breakout Hunter <span class="badge badge-bench">Benched</span></h3>
+        <div class="role">Hunted coiled springs — compressed markets breaking out.</div>
+        <ul>
+          <li>Volatility compressed to a fraction of normal</li>
+          <li>Price pressing a level touched 2+ times, enters on the break</li>
+        </ul>
+        <div class="why">Only profitable in the wild 2020–23 era; loses
+        elsewhere by chasing tops. Benched until rebuilt to enter on the
+        retest, not the pop.</div>
+      </div>
+      <div class="agent">
+        <h3>Regime Engine <span class="badge badge-rule">Referee</span></h3>
+        <div class="role">Decides which scouts are allowed to hunt where.</div>
+        <ul>
+          <li>Labels every pair TRENDING / RANGING / DEAD / NEWS with probabilities</li>
+          <li>Ranks currency strength across the whole board</li>
+          <li>Dislocation radar: stacks signals (compression, strength
+              divergence, crowd extremes) — ⚡ on the Live tab</li>
+        </ul>
+        <div class="why">Wrong-regime pitches never happen: a range-fader
+        can't pitch a trending market.</div>
+      </div>
+      <div class="agent">
+        <h3>Risk Manager <span class="badge badge-rule">Hard rules</span></h3>
+        <div class="role">No discretion. Kills any pitch that breaks a rule.</div>
+        <ul>
+          <li>Reward must be ≥ 2.5× the risk; spread ≤ 15% of the stop</li>
+          <li>No entries within 4h of high-impact news (auto calendar)</li>
+          <li><b>Crowd veto</b> — never join a crowded position (the one rule
+              that survived 9 years of testing)</li>
+          <li>Max 3 positions, 5 trades/week, no correlated doubles,
+              1–2% risk each, circuit breakers on losing streaks</li>
+        </ul>
+        <div class="why">In testing, ~85% of all pitches die here. That's the
+        point.</div>
+      </div>
+      <div class="agent">
+        <h3>Head Trader <span class="badge badge-rule">Selector</span></h3>
+        <div class="role">Ranks the survivors; picks at most two — or none.</div>
+        <ul>
+          <li>Score = confidence × scout's track record × regime fit ×
+              macro alignment × session quality × room to run</li>
+          <li>Must clear an absolute bar; "no trade" is the default</li>
+        </ul>
+        <div class="why">Scout track records update weekly from their own
+        logged results — hot scouts earn a louder voice.</div>
+      </div>
+      <div class="agent">
+        <h3>Campaign Manager <span class="badge badge-rule">Trade care</span></h3>
+        <div class="role">Manages every position from fill to close.</div>
+        <ul>
+          <li>Stop attached at the broker the instant of the fill — 24/7 protection</li>
+          <li>+1R: stop moves to breakeven (trade becomes free)</li>
+          <li>+2R: banks 40%, trails the rest to ride big moves</li>
+          <li>Strong trends: adds funded purely by locked-in profit</li>
+        </ul>
+        <div class="why">Designed to make losers small and constant, winners
+        occasionally huge.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card"><h2>What 9 years of testing uncovered</h2>
+    <table class="findings">
+      <thead><tr><th>Finding</th><th>Evidence</th><th>Consequence</th></tr></thead>
+      <tbody>
+        <tr><td>Chart patterns have no edge</td>
+          <td>~2,200 outcomes, 3 eras — continuation entries negative everywhere</td>
+          <td>Trend Rider &amp; Breakout Hunter benched</td></tr>
+        <tr><td>Edges rotate with eras</td>
+          <td>Breakouts +0.22R in 2020–23, negative in calm eras</td>
+          <td>Never trust a single-era backtest</td></tr>
+        <tr><td class="pos">Joining crowds is taxed</td>
+          <td>−0.3 to −0.8R per trade, replicated in all 3 eras</td>
+          <td><b>Crowd veto shipped</b> — the desk's one verified law</td></tr>
+        <tr><td>Fading crowds ≈ breakeven</td>
+          <td>Best fade slice: ~0R after costs</td>
+          <td>A shield, not a sword — edge hunt continues</td></tr>
+        <tr><td>Our methods can fool us</td>
+          <td>Null-control produced a convincing fake pattern, then failed to replicate</td>
+          <td>Nothing ships without surviving unseen data</td></tr>
+      </tbody>
+    </table>
+    <p class="prose" style="margin-top:16px">Bottom line: <b>no free public
+    signal beats trading costs.</b> The desk therefore trades practice while
+    the edge hunt continues — next experiment: OANDA's own retail order-book
+    and position-book data (untested, free, finer-grained than anything above).</p>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL = "https://fzhhbhesjdotsfghumqz.supabase.co";
 const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ6aGhiaGVzamRvdHNmZ2h1bXF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2NTM3ODIsImV4cCI6MjA5NjIyOTc4Mn0.ZMI6qkLuINZ7wCVdk9wXNwo-qDMWjUan2GRmc0cgZWM";
@@ -177,6 +344,16 @@ async function unlock(){
 function enter(){document.getElementById("gate").style.display="none";
   document.getElementById("app").style.display="block";load();
   setInterval(load, 120000);}
+
+function showView(v){
+  const live=v==="live";
+  // hero, chart, trace, grid + footer live inside #app after the header
+  [...document.querySelectorAll("#app > :not(header)")].forEach(el=>
+    el.style.display=live?"":"none");
+  document.getElementById("view-how").style.display=live?"none":"block";
+  document.getElementById("tab-live").classList.toggle("active",live);
+  document.getElementById("tab-how").classList.toggle("active",!live);
+}
 
 async function q(table, params){
   const r=await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`,
