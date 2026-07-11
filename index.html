@@ -130,6 +130,7 @@
   .badge-bench { background:var(--surface); color:var(--steel);
                  border:1px solid var(--hairline); }
   .badge-rule { background:#eef4ff; color:var(--brand-blue-deep); }
+  .badge-trial { background:#fff4e5; color:#8a4b00; }
   .findings td:first-child { font-weight:600; white-space:nowrap; }
   .prose { font-size:16px; line-height:1.6; color:var(--charcoal);
            max-width:760px; }
@@ -311,6 +312,26 @@
         through one benchmark window — the push partially snaps back. The
         first edge to survive every control; earning live capital on paper.</div>
       </div>
+      <div class="agent">
+        <h3>Claude Scout <span class="badge badge-trial">On trial · off</span></h3>
+        <div class="role">The one discretionary seat: an AI pitching judgement
+        calls, not patterns.</div>
+        <ul>
+          <li>Each thesis is written to a public, append-only log and
+              <b>committed before its window opens</b> — the timestamp is the
+              proof it wasn't written with hindsight</li>
+          <li>No exemptions: same 2.5× reward bar, crowd veto, news blackout,
+              correlation limits and 5-trade weekly budget as every scout</li>
+          <li>Every pitch is mirrored with the direction flipped. If flipping
+              the calls does as well, the calls were noise</li>
+          <li>Verdict at 30 closed trades, on rules fixed in advance. Passing
+              on a trade is logged too — declining is a result</li>
+        </ul>
+        <div class="why">It cannot be backtested: any "historical" AI thesis is
+        written by a model that already knows what happened. So it is tested
+        the only honest way — forward, on paper, in public. Currently switched
+        off; a trial not yet started.</div>
+      </div>
     </div>
   </div>
 
@@ -342,13 +363,24 @@
         <tr><td class="pos">Month-end fix fade WORKS</td>
           <td>Positive in 5 independent samples 2010–2026; momentum null negative in all 5</td>
           <td><b>Fix Fader shipped to paper</b> — first verified sword</td></tr>
+        <tr><td>Fighting the interest-rate gap looks costly — but we can't prove it</td>
+          <td>Trades against a rate differential lost more in all 3 eras (−0.79R, −0.76R, −0.06R), yet the key era produced only 5 such trades and the confidence interval missed excluding zero by 0.008R</td>
+          <td><b>Carry tiebreaker written, then switched off.</b> The rules for
+              passing were fixed before the test; it didn't pass. Lowering the
+              bar afterwards is how research lies to you</td></tr>
+        <tr><td>A patient desk starves its own experiments</td>
+          <td>~15 trades a year means a sub-group question gets ~5 examples per era — too few to answer, no matter how real the effect</td>
+          <td>Future sub-group tests wait for live data to accumulate, rather
+              than being decided on thin samples</td></tr>
       </tbody>
     </table>
-    <p class="prose" style="margin-top:16px">Bottom line: after nine
-    pre-registered trials across eight signal families, <b>one structural
-    edge survived every control</b> — the month-end London fix fade — plus
-    one verified law (the crowd veto). Both trade on paper only until
-    sustained results earn live capital.</p>
+    <p class="prose" style="margin-top:16px">Bottom line: after <b>ten</b>
+    pre-registered trials across nine signal families, <b>one structural edge
+    survived every control</b> — the month-end London fix fade — plus one
+    verified law (the crowd veto). Nine ideas were killed, including one that
+    looked right in all three eras and still failed its own test. An eleventh
+    trial is registered and not yet started: the Claude Scout arena. Everything
+    trades on paper only until sustained results earn live capital.</p>
   </div>
 </div>
 
